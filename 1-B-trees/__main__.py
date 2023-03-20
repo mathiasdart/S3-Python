@@ -5,7 +5,7 @@ B-trees - classics: search + insert + delete
 """
 
 from algo_py import btree
-import Btrees_examples
+import ex_gra
 
 
 # 1.3: B-Tree -> list of ordered keys

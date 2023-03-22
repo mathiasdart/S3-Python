@@ -1,9 +1,13 @@
 import queue
 
+from contextlib import redirect_stdout
+
 from algo_py import graph
 from algo_py import graphmat
 from algo_py import queue
+import unittest
 import ex_graphs
+from io import StringIO
 
 
 def degrees(G: graphmat):
@@ -20,8 +24,6 @@ def degrees(G: graphmat):
             if M[i][k] >= 1:
                 deg[i] += M[i][k]
     return deg
-
-
 def in_out_degrees(G: graph.Graph):
     din = [0] * G.order
     dout = [0] * G.order
@@ -31,12 +33,8 @@ def in_out_degrees(G: graph.Graph):
             din[y] += 1
             dout[x] += 1
     return din, dout
-
-
 def outdegree(G):
     return [len(L) for L in G.adjlists]
-
-
 def dotMat(G: graphmat.GraphMat):
     n = G.order
     M = G.adj
@@ -57,13 +55,11 @@ def dotMat(G: graphmat.GraphMat):
                 if M[i][j] > 0:
                     s += M[i][j] * (str(i) + link + str(j) + "\n")
     return s + "}\n"
-
-
 def todotGraph(G):
     """Dot format of graph.
 
     Args:
-        Graph
+        G:Graph
 
     Returns:
         str: String storing dot format of graph.
@@ -86,8 +82,6 @@ def todotGraph(G):
             if x >= y:
                 s += str(x) + link + str(x) + "\n"
     return s + "}\n"
-
-
 def buildparentA(G):
     M = [False] * G.order
     A = G.adjlists
@@ -96,8 +90,6 @@ def buildparentA(G):
         if M[s] is False:
             buildparentA__(G, M, A, s, P)
     return P
-
-
 def buildparentA__(G, M, A, s, P):
     """
     Args:
@@ -113,7 +105,6 @@ def buildparentA__(G, M, A, s, P):
     Q.enqueue(s)
     M[s] = True
     P[s] = -1
-    print(s, end=" ")
     while not Q.isempty():
         S = Q.dequeue()
         for x in A[S]:
@@ -121,41 +112,31 @@ def buildparentA__(G, M, A, s, P):
                 Q.enqueue(x)
                 P[x] = S
                 M[x] = True
-                print(x, end=" ")
-    print()
-
-
 def buildParentMat(G):
     M = [False] * G.order
     Mat = G.adj
-    P = [None]* G.order
+    P = [None] * G.order
     for s in range(G.order):
         if M[s] is False:
-            buildParentMat__(G, M, s, Mat,P)
-
-
+            buildParentMat__(G, M, s, Mat, P)
+    return P
 def buildParentMat__(G, M, s, Mat, P):
     Q = queue.Queue()
     Q.enqueue(s)
     M[s] = True
-    print(s, end=" ")
+    P[s] = -1
     while not Q.isempty():
         S = Q.dequeue()
-        P[S] = -1
+
         i = 0
         for x in Mat[S]:
             if x != 0:
                 if M[i] is False:
                     Q.enqueue(i)
                     M[i] = True
-                    P[i] = x
-                    print(i, end=" ")
+                    P[i] = S
             i += 1
         i = 0
-    print()
-
-
-
 def prefixeAdj(G, start):
     M = [False] * G.order
     Mat = G.adjlists
@@ -163,8 +144,6 @@ def prefixeAdj(G, start):
     for s in range(G.order):
         if M[s] is False:
             BFSprefAdj(G, s, M, Mat)
-
-
 def BFSprefAdj(G, s, M, A):
     """
     Args:
@@ -185,9 +164,6 @@ def BFSprefAdj(G, s, M, A):
                 Q.enqueue(x)
                 M[x] = True
                 print(x, end=" ")
-    print()
-
-
 def prefixeMat(G: graphmat.GraphMat, start):
     M = [False] * G.order
     Mat = G.adj
@@ -195,8 +171,6 @@ def prefixeMat(G: graphmat.GraphMat, start):
     for s in range(G.order):
         if M[s] is False:
             BFSprefMat(G, s, M, Mat)
-
-
 def BFSprefMat(G, s, M, Mat):
     Q = queue.Queue()
     Q.enqueue(s)
@@ -213,15 +187,43 @@ def BFSprefMat(G, s, M, Mat):
                     print(i, end=" ")
             i += 1
         i = 0
-    print()
 
 
-print(buildparentA(ex_graphs.G1))
-print()
-print(buildParentMat(ex_graphs.G1mat))
 
-"""
-prefixeAdj(ex_graphs.G1,0)
-print()
-prefixeMat(ex_graphs.G1mat,0)
-"""
+class value:
+    G1p = [-1, 0, 0, 1, 6, -1, 0, -1, 2]
+    G2p = [-1, 0, 0, 1, -1, 4, 4, 4, 5]
+    PrAdG1 = "0 1 6 2 3 4 8 5 7 "
+    PrAdG2 = "0 2 1 3 4 5 6 7 8 "
+    PrMatG1 = "0 1 2 6 3 8 4 5 7 "
+    PrMatG2 = "0 1 2 3 4 5 6 7 8 "
+class testgraph(unittest.TestCase):
+    def testbuildParentA(self):
+        self.assertEqual(buildparentA(ex_graphs.G1), value.G1p)
+        self.assertEqual(buildparentA(ex_graphs.G2), value.G2p)
+
+    def testbuildParentMat(self):
+        self.assertEqual(buildParentMat(ex_graphs.G1mat), value.G1p)
+        self.assertEqual(buildParentMat(ex_graphs.G2mat), value.G2p)
+
+    def testprefixeAdj(self):
+        with redirect_stdout(StringIO()) as sout:
+            prefixeAdj(ex_graphs.G1, 0)
+        retval = sout.getvalue().rstrip('\n')
+
+        self.assertEqual(value.PrAdG1, retval)
+        s = "0 2 1 3 4 5 6 7 8 "
+        with redirect_stdout(StringIO()) as sout:
+            prefixeAdj(ex_graphs.G2, 0)
+        retval = sout.getvalue().rstrip('\n')
+        self.assertEqual(value.PrAdG2, retval)
+
+    def testPrefixeMat(self):
+        with redirect_stdout(StringIO()) as sout:
+            prefixeMat(ex_graphs.G1mat, 0)
+        retval = sout.getvalue().rstrip('\n')
+        self.assertEqual(value.PrMatG1, retval)
+        with redirect_stdout(StringIO()) as sout:
+            prefixeMat(ex_graphs.G2mat, 0)
+        retval = sout.getvalue().rstrip('\n')
+        self.assertEqual(value.PrMatG2, retval)

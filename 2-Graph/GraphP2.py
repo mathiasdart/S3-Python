@@ -69,23 +69,45 @@ def __wayO(G,path,mq,s,search):
         if mq[x] == 0:
             mq[x] = 1
             if x == search:
-                return path.append(x)
-            return __wayO(G,path.append(x),mq,x)
-def wayO(G,search):
+                path.append(x)
+                return path
+            path.append(x)
+            return __wayO(G,path,mq,x,search)
+def wayO(G,beg,end):
     mq = [0] * G.order
+    mq[beg] = 1
+    return __wayO(G,[beg],mq,beg,end)
+
+
+def __path_DFS(G,scr,dst,P):
+    q = queue.Queue()
+    q.enqueue(G)
+    P[scr] = -1
+    while not q.isempty():
+        x = q.dequeue()
+        for y in G.adjlists[x]:
+            if P[y] == None:
+                q.enqueue(y)
+                P[y] = x
+
+
+def path_DFS(G,src,dst):
+    P = [None]* G.order
     path = []
-    for s in range(G.order):
-        if mq[s] == 0:
-            finalpath = __wayO(G,path,mq,s,seach)
-    return finalpath
-
-
-
+    if __path_DFS(G,src,dst,P):
+        pass
+    return path
 def wayNO():
     pass
-print(components(ex_graphs.G3_cc))
+
+#print(wayO(ex_graphs.Gp,7,3))
+
+
+#print(wayO(ex_graphs.G3_cc,7,13))
+print(wayO(ex_graphs.Gc,10,12))
 
 '''
 print(dfs_digraph(ex_graphs.G1))
+print(components(ex_graphs.G3_cc))
 
 '''

@@ -18,9 +18,9 @@ def __dfs_digraph(G, x, pref, suff, cpt):
             cpt = __dfs_digraph(G, y, pref, suff, cpt)
         else:
             if pref[x] < pref[y]:
-                print(x, "->", y , "forward")
+                print(x, "->", y, "forward")
             elif suff[y] == None:
-                print(x, "->", y , "back")
+                print(x, "->", y, "back")
             else:
                 print(x, "->", y, "cross")
     cpt += 1
@@ -45,7 +45,8 @@ def dfs_digraph(G):
             cpt = __dfs_digraph(G, s, pref, suff, cpt)
     return pref, suff
 
-def __components(G,mq,act,Mat,s):
+
+def __components(G, mq, act, Mat, s):
     q = queue.Queue()
     q.enqueue(s)
     while not q.isempty():
@@ -54,17 +55,20 @@ def __components(G,mq,act,Mat,s):
             if mq[x] == 0:
                 mq[x] = act
                 q.enqueue(x)
+
+
 def components(G):
     mq = [0] * G.order
     act = 1
-    for s in range (G.order):
+    for s in range(G.order):
         if mq[s] == 0:
             mq[s] = act
-            __components(G,mq,act,G.adjlists,s)
-            act +=1
+            __components(G, mq, act, G.adjlists, s)
+            act += 1
     return mq
 
-def __wayO(G,path,mq,s,search):
+
+def __DFS_path(G, path, mq, s, search):
     for x in G.adjlists[s]:
         if mq[x] == 0:
             mq[x] = 1
@@ -72,14 +76,16 @@ def __wayO(G,path,mq,s,search):
                 path.append(x)
                 return path
             path.append(x)
-            return __wayO(G,path,mq,x,search)
-def wayO(G,beg,end):
+            return __DFS_path(G, path, mq, x, search)
+
+
+def DFS_path(G, beg, end):
     mq = [0] * G.order
     mq[beg] = 1
-    return __wayO(G,[beg],mq,beg,end)
+    return __DFS_path(G, [beg], mq, beg, end)
 
 
-def __path_DFS(G,scr,dst,P):
+def __path_BFS(G, scr, dst, P):
     q = queue.Queue()
     q.enqueue(G)
     P[scr] = -1
@@ -91,20 +97,65 @@ def __path_DFS(G,scr,dst,P):
                 P[y] = x
 
 
-def path_DFS(G,src,dst):
-    P = [None]* G.order
+def path_BFS(G, src, dst):
+    P = [None] * G.order
     path = []
-    if __path_DFS(G,src,dst,P):
-        pass
+    if __path_BFS(G, src, dst, P):
+        while dst != -1:
+            path.append(dst)
+            dst = P[dst]
     return path
-def wayNO():
-    pass
-
-#print(wayO(ex_graphs.Gp,7,3))
 
 
-#print(wayO(ex_graphs.G3_cc,7,13))
-print(wayO(ex_graphs.Gc,10,12))
+def excentricity(G, src):
+    dist = [-1] * G.order
+    q = queue.Queue()
+    q.enqueue(src)
+    dist[src] = 0
+    while not q.isempty():
+        s = q.dequeue()
+        for adj in G.adjlists[s]:
+            if dist[adj] == -1:
+                dist[adj] = dist[s] + 1
+                q.enqueue(adj)
+    return dist[s]
+
+
+def center(G):
+    excMin = excentricity(G, 0)
+    L = [0]
+    for s in range(1, G.order):
+        exc = excentricity(G, s)
+        if exc < excMin:
+            (L, excMin) = ([s], exc)
+        elif exc == excMin:
+            L.append(s)
+    return L
+
+def is_tree(G):
+    L = components(G)
+    i = 0
+    n = len(L)
+    while i < n and L[i] == 1:
+        i+=1
+    if i != n:
+        return False
+    for j in range(len(G.adjlists)-1):
+        if j in G.adjlists[j]:
+            return False
+    return True
+
+import files
+
+G = graph.load("files/graphISP_tree.gra")
+print(is_tree(G))
+
+
+
+
+
+
+
 
 '''
 print(dfs_digraph(ex_graphs.G1))
